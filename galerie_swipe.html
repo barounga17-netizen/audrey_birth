@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Galerie Swipe</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,500;1,300&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+
+  body {
+    background: #0a0a0f;
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow: hidden;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+  }
+
+  .header { text-align: center; }
+
+  .header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 300;
+    color: #f0ede6;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+  }
+
+  .header p {
+    font-size: 11px;
+    color: rgba(240,237,230,0.35);
+    letter-spacing: 3px;
+    margin-top: 6px;
+    text-transform: uppercase;
+  }
+
+  .url-bar {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .url-bar input {
+    flex: 1;
+    background: rgba(255,255,255,0.05);
+    border: 0.5px solid rgba(255,255,255,0.12);
+    border-radius: 50px;
+    padding: 10px 18px;
+    color: #f0ede6;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .url-bar input::placeholder { color: rgba(240,237,230,0.3); }
+  .url-bar input:focus { border-color: rgba(255,255,255,0.3); }
+
+  .url-bar button {
+    background: rgba(255,255,255,0.08);
+    border: 0.5px solid rgba(255,255,255,0.15);
+    border-radius: 50px;
+    padding: 10px 18px;
+    color: #f0ede6;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+
+  .url-bar button:hover { background: rgba(255,255,255,0.14); }
+
+  .stack-container {
+    position: relative;
+    width: 100%;
+    height: 480px;
+  }
+
+  .card {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 24px;
+    overflow: hidden;
+    cursor: grab;
+    will-change: transform;
+    touch-action: none;
+  }
+
+  .card:active { cursor: grabbing; }
+
+  .card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    display: block;
+  }
+
+  .card .img-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 2px;
+    background: #1a1a24;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .card-overlay {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 60px 28px 28px;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%);
+  }
+
+  .card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 300;
+    color: #f0ede6;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+
+  .card-sub {
+    font-size: 12px;
+    color: rgba(240,237,230,0.5);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .hint-like, .hint-nope {
+    position: absolute;
+    top: 28px;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    opacity: 0;
+    transition: opacity 0.1s;
+    pointer-events: none;
+    border: 3px solid;
+  }
+
+  .hint-like {
+    left: 24px;
+    color: #4dffa3;
+    border-color: #4dffa3;
+    transform: rotate(-15deg);
+  }
+
+  .hint-nope {
+    right: 24px;
+    color: #ff6fa8;
+    border-color: #ff6fa8;
+    transform: rotate(15deg);
+  }
+
+  .bg-card-2 {
+    transform: scale(0.94) translateY(16px);
+    z-index: 1;
+    transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+
+  .bg-card-3 {
+    transform: scale(0.88) translateY(32px);
+    z-index: 0;
+    transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+
+  .counter {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    transition: all 0.3s ease;
+  }
+
+  .dot.active {
+    background: #f0ede6;
+    width: 20px;
+    border-radius: 3px;
+  }
+
+  .actions {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+
+  .btn-action {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    border: 0.5px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 20px;
+    color: #f0ede6;
+  }
+
+  .btn-action:hover { background: rgba(255,255,255,0.1); transform: scale(1.08); }
+  .btn-action.nope { border-color: rgba(255,111,168,0.3); }
+  .btn-action.nope:hover { background: rgba(255,111,168,0.12); }
+  .btn-action.like { border-color: rgba(77,255,163,0.3); }
+  .btn-action.like:hover { background: rgba(77,255,163,0.12); }
+
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: rgba(30,30,40,0.95);
+    border: 0.5px solid rgba(255,255,255,0.1);
+    color: #f0ede6;
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-size: 13px;
+    letter-spacing: 1px;
+    transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    z-index: 100;
+    white-space: nowrap;
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  .particle {
+    position: fixed;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 999;
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="header">
+    <h1>Galerie</h1>
+    <p>Swipe pour explorer</p>
+  </div>
+
+  <div class="url-bar">
+    <input type="text" id="urlInput" placeholder="Coller une URL d'image..." />
+    <button onclick="addImageFromUrl()">+ Ajouter</button>
+  </div>
+
+  <div class="stack-container" id="stack"></div>
+
+  <div class="counter" id="counter"></div>
+
+  <div class="actions">
+    <div class="btn-action nope" onclick="swipeCard('left')">✕</div>
+    <div class="btn-action like" onclick="swipeCard('right')">♡</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const DEMO_IMAGES = [
+  { url: 'img/a.jpg', title: '', sub: '' },
+  { url: 'img/b.jpg', title: '', sub: '' },
+  { url: 'img/c.jpg', title: '', sub: '' },
+  { url: 'img/d.jpg', title: '', sub: '' },
+  { url: 'img/e.jpg', title: '', sub: '' },
+  { url: 'img/f.jpg', title: '', sub: ''  },
+  { url: 'img/g.jpg', title: '', sub: '' },
+  { url: 'img/h.jpg', title: '', sub: '' },
+];
+
+let images = [...DEMO_IMAGES];
+let currentIndex = 0;
+let isDragging = false;
+let startX = 0, startY = 0;
+let currentX = 0;
+let activeCard = null;
+
+function buildStack() {
+  const stack = document.getElementById('stack');
+  stack.innerHTML = '';
+  const total = images.length;
+
+  if (total === 0 || currentIndex >= total) {
+    stack.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:rgba(240,237,230,0.3);font-size:14px;letter-spacing:2px;flex-direction:column;gap:12px;background:#1a1a24;border-radius:24px;"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>Ajoutez des images</div>`;
+    updateCounter();
+    return;
+  }
+
+  for (let i = Math.min(currentIndex + 2, total - 1); i >= currentIndex; i--) {
+    const card = createCard(images[i], i);
+    const offset = i - currentIndex;
+    if (offset === 2) card.classList.add('bg-card-3');
+    else if (offset === 1) card.classList.add('bg-card-2');
+    else {
+      card.style.zIndex = 2;
+      card.style.transform = 'scale(1) translateY(0)';
+      attachDrag(card);
+    }
+    stack.appendChild(card);
+  }
+  updateCounter();
+}
+
+function createCard(img, index) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.dataset.index = index;
+
+  const image = document.createElement('img');
+  image.src = img.url;
+  image.alt = img.title;
+  image.onerror = () => {
+    image.style.display = 'none';
+    const ph = document.createElement('div');
+    ph.className = 'img-placeholder';
+    ph.innerHTML = `<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg><span>Image non disponible</span>`;
+    card.insertBefore(ph, card.firstChild);
+  };
+
+  const overlay = document.createElement('div');
+  overlay.className = 'card-overlay';
+  overlay.innerHTML = `<div class="card-title">${img.title}</div><div class="card-sub">${img.sub}</div>`;
+
+  const hintLike = document.createElement('div');
+  hintLike.className = 'hint-like';
+  hintLike.textContent = 'OUI';
+
+  const hintNope = document.createElement('div');
+  hintNope.className = 'hint-nope';
+  hintNope.textContent = 'NON';
+
+  card.appendChild(image);
+  card.appendChild(overlay);
+  card.appendChild(hintLike);
+  card.appendChild(hintNope);
+  return card;
+}
+
+function attachDrag(card) {
+  card.addEventListener('mousedown', dragStart);
+  card.addEventListener('touchstart', dragStart, { passive: true });
+}
+
+function dragStart(e) {
+  isDragging = true;
+  activeCard = e.currentTarget;
+  const point = e.touches ? e.touches[0] : e;
+  startX = point.clientX;
+  startY = point.clientY;
+  currentX = 0;
+  activeCard.style.transition = 'none';
+
+  document.addEventListener('mousemove', dragMove);
+  document.addEventListener('mouseup', dragEnd);
+  document.addEventListener('touchmove', dragMove, { passive: false });
+  document.addEventListener('touchend', dragEnd);
+}
+
+function dragMove(e) {
+  if (!isDragging || !activeCard) return;
+  if (e.cancelable) e.preventDefault();
+  const point = e.touches ? e.touches[0] : e;
+  currentX = point.clientX - startX;
+  const currentY = point.clientY - startY;
+  const rotation = currentX * 0.08;
+
+  activeCard.style.transform = `translate(${currentX}px, ${currentY}px) rotate(${rotation}deg) scale(1)`;
+
+  const ratio = Math.abs(currentX) / 120;
+  const hintLike = activeCard.querySelector('.hint-like');
+  const hintNope = activeCard.querySelector('.hint-nope');
+  if (currentX > 0) {
+    hintLike.style.opacity = Math.min(ratio, 1);
+    hintNope.style.opacity = 0;
+  } else {
+    hintNope.style.opacity = Math.min(ratio, 1);
+    hintLike.style.opacity = 0;
+  }
+
+  const stack = document.getElementById('stack');
+  stack.querySelectorAll('.card').forEach(c => {
+    if (c === activeCard) return;
+    const off = parseInt(c.dataset.index) - currentIndex;
+    const prog = Math.min(Math.abs(currentX) / 120, 1);
+    if (off === 1) {
+      const s = 0.94 + 0.06 * prog;
+      const y = 16 - 16 * prog;
+      c.style.transform = `scale(${s}) translateY(${y}px)`;
+    } else if (off === 2) {
+      const s = 0.88 + 0.06 * prog;
+      const y = 32 - 16 * prog;
+      c.style.transform = `scale(${s}) translateY(${y}px)`;
+    }
+  });
+}
+
+function dragEnd() {
+  if (!isDragging || !activeCard) return;
+  isDragging = false;
+
+  document.removeEventListener('mousemove', dragMove);
+  document.removeEventListener('mouseup', dragEnd);
+  document.removeEventListener('touchmove', dragMove);
+  document.removeEventListener('touchend', dragEnd);
+
+  const threshold = 110;
+  if (currentX > threshold) {
+    flyOut(activeCard, 'right');
+  } else if (currentX < -threshold) {
+    flyOut(activeCard, 'left');
+  } else {
+    activeCard.style.transition = 'transform 0.5s cubic-bezier(0.34,1.56,0.64,1)';
+    activeCard.style.transform = 'translate(0,0) rotate(0deg) scale(1)';
+    const hintLike = activeCard.querySelector('.hint-like');
+    const hintNope = activeCard.querySelector('.hint-nope');
+    if (hintLike) hintLike.style.opacity = 0;
+    if (hintNope) hintNope.style.opacity = 0;
+
+    const stack = document.getElementById('stack');
+    stack.querySelectorAll('.card').forEach(c => {
+      if (c === activeCard) return;
+      const off = parseInt(c.dataset.index) - currentIndex;
+      c.style.transition = 'transform 0.5s cubic-bezier(0.34,1.56,0.64,1)';
+      if (off === 1) c.style.transform = 'scale(0.94) translateY(16px)';
+      else if (off === 2) c.style.transform = 'scale(0.88) translateY(32px)';
+    });
+  }
+  activeCard = null;
+  currentX = 0;
+}
+
+function flyOut(card, dir) {
+  const x = dir === 'right' ? window.innerWidth + 200 : -(window.innerWidth + 200);
+  const rot = dir === 'right' ? 25 : -25;
+  card.style.transition = 'transform 0.5s cubic-bezier(0.55,0,1,0.45), opacity 0.5s ease';
+  card.style.transform = `translate(${x}px, -40px) rotate(${rot}deg)`;
+  card.style.opacity = '0';
+
+  spawnParticles(dir);
+  showToast(dir === 'right' ? '♡ Aimé' : '✕ Passé');
+
+  setTimeout(() => {
+    currentIndex++;
+    buildStack();
+  }, 420);
+}
+
+function swipeCard(dir) {
+  const stack = document.getElementById('stack');
+  const top = stack.querySelector(`.card[data-index="${currentIndex}"]`);
+  if (!top) return;
+  const hint = top.querySelector(dir === 'right' ? '.hint-like' : '.hint-nope');
+  if (hint) hint.style.opacity = '1';
+  setTimeout(() => flyOut(top, dir), 80);
+}
+
+function updateCounter() {
+  const counter = document.getElementById('counter');
+  counter.innerHTML = '';
+  images.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'dot' + (i === currentIndex ? ' active' : '');
+    counter.appendChild(dot);
+  });
+}
+
+function addImageFromUrl() {
+  const input = document.getElementById('urlInput');
+  const url = input.value.trim();
+  if (!url) return;
+  images.splice(currentIndex, 0, { url, title: 'Ma Photo', sub: `Image ${images.length + 1}` });
+  input.value = '';
+  buildStack();
+  showToast('Image ajoutée !');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+function spawnParticles(dir) {
+  const colors = dir === 'right'
+    ? ['#4dffa3', '#a0ffdb', '#ffffff']
+    : ['#ff6fa8', '#ffb3cc', '#ffffff'];
+
+  const stack = document.getElementById('stack');
+  const rect = stack.getBoundingClientRect();
+
+  for (let i = 0; i < 14; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.background = colors[Math.floor(Math.random() * colors.length)];
+    p.style.left = (rect.left + rect.width * (dir === 'right' ? 0.75 : 0.25)) + 'px';
+    p.style.top = (rect.top + rect.height * 0.4) + 'px';
+    document.body.appendChild(p);
+
+    const angle = (Math.random() * Math.PI) - Math.PI / 2 + (dir === 'right' ? 0.3 : -0.3);
+    const speed = 60 + Math.random() * 80;
+    const vx = Math.cos(angle) * speed * (dir === 'right' ? 1 : -1);
+    const vy = Math.sin(angle) * speed - 40;
+    let t = 0;
+
+    const anim = () => {
+      t += 0.04;
+      const x = parseFloat(p.style.left) + vx * 0.04;
+      const y = parseFloat(p.style.top) + vy * 0.04 + 0.5 * 120 * 0.04 * 0.04 * t;
+      p.style.left = x + 'px';
+      p.style.top = y + 'px';
+      p.style.opacity = 1 - t * 2;
+      if (t < 0.5) requestAnimationFrame(anim);
+      else p.remove();
+    };
+    requestAnimationFrame(anim);
+  }
+}
+
+buildStack();
+</script>
+</body>
+</html>

@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Joyeux Anniversaire Audrey 🎉</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Dancing+Script:wght@600;700&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --gold: #f5c842;
+    --rose: #ff6fa8;
+    --violet: #b87aff;
+    --bleu: #5bc8ff;
+    --vert: #4dffa3;
+    --bg: #05030f;
+  }
+
+  body {
+    background: var(--bg);
+    font-family: 'Lato', sans-serif;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  #fireworks-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    text-align: center;
+    padding: 40px 20px;
+  }
+
+  .date-badge {
+    font-family: 'Lato', sans-serif;
+    font-weight: 300;
+    letter-spacing: 6px;
+    font-size: 11px;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 30px;
+    opacity: 0;
+    animation: fadeUp 1s ease 0.5s forwards;
+  }
+
+  .avatar-ring {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--rose), var(--violet), var(--gold));
+    padding: 4px;
+    margin-bottom: 35px;
+    opacity: 0;
+    animation: fadeUp 1s ease 0.8s forwards;
+    box-shadow: 0 0 40px rgba(255, 111, 168, 0.4), 0 0 80px rgba(184, 122, 255, 0.2);
+  }
+
+  .avatar-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1a0a2e, #2d1045);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 70px;
+    user-select: none;
+  }
+
+  h1 {
+    font-family: 'Dancing Script', cursive;
+    font-size: clamp(60px, 12vw, 110px);
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--gold), var(--rose), var(--violet), var(--bleu), var(--gold));
+    background-size: 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 4s linear infinite, fadeUp 1s ease 1s forwards;
+    opacity: 0;
+    line-height: 1.1;
+    margin-bottom: 10px;
+  }
+
+  @keyframes shimmer {
+    from { background-position: 0% center; }
+    to { background-position: 200% center; }
+  }
+
+  .subtitle {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: clamp(18px, 4vw, 26px);
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 50px;
+    opacity: 0;
+    animation: fadeUp 1s ease 1.2s forwards;
+  }
+
+  .sparkle-row {
+    display: flex;
+    gap: 20px;
+    font-size: 28px;
+    margin-bottom: 50px;
+    opacity: 0;
+    animation: fadeUp 1s ease 1.4s forwards;
+  }
+
+  .sparkle-row span {
+    display: inline-block;
+    animation: bounce 1.5s ease-in-out infinite;
+  }
+  .sparkle-row span:nth-child(2) { animation-delay: 0.2s; }
+  .sparkle-row span:nth-child(3) { animation-delay: 0.4s; }
+  .sparkle-row span:nth-child(4) { animation-delay: 0.6s; }
+  .sparkle-row span:nth-child(5) { animation-delay: 0.8s; }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .cards-section {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    padding: 40px 20px 80px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 24px;
+    padding: 32px 28px;
+    width: 260px;
+    text-align: center;
+    backdrop-filter: blur(12px);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards;
+  }
+
+  .card:nth-child(1) { animation-delay: 1.6s; }
+  .card:nth-child(2) { animation-delay: 1.8s; }
+  .card:nth-child(3) { animation-delay: 2s; }
+
+  .card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 60px rgba(255, 111, 168, 0.2);
+    border-color: rgba(255, 111, 168, 0.3);
+  }
+
+  .card-icon { font-size: 42px; margin-bottom: 16px; }
+
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: #fff;
+    margin-bottom: 10px;
+  }
+
+  .card-text {
+    font-size: 14px;
+    color: rgba(255,255,255,0.55);
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  .message-section {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 40px 30px 100px;
+    max-width: 700px;
+    margin: 0 auto;
+    opacity: 0;
+    animation: fadeUp 1s ease 2.2s forwards;
+  }
+
+  .message-quote {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(20px, 4vw, 28px);
+    font-style: italic;
+    color: rgba(255,255,255,0.85);
+    line-height: 1.7;
+    margin-bottom: 24px;
+    padding: 0 20px;
+    border-left: 3px solid var(--rose);
+    text-align: left;
+  }
+
+  .message-sign {
+    font-family: 'Dancing Script', cursive;
+    font-size: 22px;
+    color: var(--gold);
+  }
+
+  .launch-btn {
+    position: relative;
+    z-index: 10;
+    display: inline-block;
+    margin-bottom: 60px;
+    padding: 16px 44px;
+    background: linear-gradient(135deg, var(--rose), var(--violet));
+    color: #fff;
+    font-family: 'Lato', sans-serif;
+    font-size: 15px;
+    font-weight: 400;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 8px 30px rgba(255, 111, 168, 0.4);
+    transition: all 0.3s ease;
+    opacity: 0;
+    animation: fadeUp 1s ease 1.6s forwards;
+  }
+
+  .launch-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 12px 40px rgba(255, 111, 168, 0.6);
+  }
+
+  .stars {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: #fff;
+    border-radius: 50%;
+    animation: twinkle var(--dur, 3s) ease-in-out infinite var(--delay, 0s);
+  }
+
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.1; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.5); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="fireworks-canvas"></canvas>
+<div class="stars" id="stars"></div>
+
+<div class="hero">
+  <div class="date-badge">✦ Joyeux Anniversaire ✦</div>
+
+  <div class="avatar-ring">
+    <div class="avatar-inner">👸</div>
+  </div>
+
+  <h1>Audrey</h1>
+  <div class="subtitle">La reine du jour brille de mille feux</div>
+
+  <div class="sparkle-row">
+    <span>🎂</span><span>🎉</span><span>💖</span><span>🥂</span><span>🌟</span>
+  </div>
+
+  <button class="launch-btn" onclick="window.location.href='galerie_swipe.html'">✨ Clique ici ✨</button>
+</div>
+
+<div class="cards-section">
+  <div class="card">
+    <div class="card-icon">🌸</div>
+    <div class="card-title">Belle & Rayonnante</div>
+    <div class="card-text">Tu illumines chaque pièce où tu entres avec ta joie et ton sourire irrésistible.</div>
+  </div>
+  <div class="card">
+    <div class="card-icon">💎</div>
+    <div class="card-title">Précieuse & Unique</div>
+    <div class="card-text">Il n'existe pas deux personnes comme toi dans ce monde. Tu es une âme rare et extraordinaire.</div>
+  </div>
+  <div class="card">
+    <div class="card-icon">🚀</div>
+    <div class="card-title">Ambitieuse & Forte</div>
+    <div class="card-text">Chaque année qui passe te révèle encore plus grande, encore plus accomplie.</div>
+  </div>
+</div>
+
+<div class="message-section">
+  <div class="message-quote">
+    "En ce jour très spécial, tu illumines… patati patata. Bref, je ne veux pas m’encombrer de clichés et de phrases toutes faites.
+
+Je veux juste te dire que je suis heureux que tu existes, vraiment. Même si je ne le dis pas souvent, ou que je ne suis pas toujours très présent, je garde avec joie nos souvenirs.
+
+Que cette année t’apporte tout ce que tu désires, et plus encore.
+
+Joyeux anniversaire Audrey !
+« Puisse le ciel pétiller pendant 24h autour de chaque lettre qui compose ton nom. » ✨🎆"
+  </div>
+  <div class="message-sign">Ton ami un peu gaucher (désolé hein j'ai pas fini le site 😅)</div>
+</div>
+
+<script>
+// ÉTOILES
+const starsContainer = document.getElementById('stars');
+for (let i = 0; i < 120; i++) {
+  const s = document.createElement('div');
+  s.className = 'star';
+  s.style.left = Math.random() * 100 + '%';
+  s.style.top = Math.random() * 100 + '%';
+  s.style.setProperty('--dur', (2 + Math.random() * 4) + 's');
+  s.style.setProperty('--delay', (-Math.random() * 4) + 's');
+  s.style.width = s.style.height = (Math.random() > 0.7 ? 3 : 2) + 'px';
+  starsContainer.appendChild(s);
+}
+
+// FEUX D'ARTIFICE
+const canvas = document.getElementById('fireworks-canvas');
+const ctx = canvas.getContext('2d');
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+const COLORS = ['#f5c842','#ff6fa8','#b87aff','#5bc8ff','#4dffa3','#ff9f45','#ff4f8b','#fff'];
+
+class Particle {
+  constructor(x, y, color) {
+    this.x = x; this.y = y;
+    this.color = color;
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 2 + Math.random() * 6;
+    this.vx = Math.cos(angle) * speed;
+    this.vy = Math.sin(angle) * speed - 1;
+    this.alpha = 1;
+    this.decay = 0.012 + Math.random() * 0.018;
+    this.radius = 1.5 + Math.random() * 2.5;
+    this.gravity = 0.08;
+    this.trail = [];
+  }
+
+  update() {
+    this.trail.push({ x: this.x, y: this.y });
+    if (this.trail.length > 5) this.trail.shift();
+    this.x += this.vx;
+    this.y += this.vy;
+    this.vy += this.gravity;
+    this.vx *= 0.99;
+    this.alpha -= this.decay;
+  }
+
+  draw() {
+    ctx.save();
+    for (let i = 0; i < this.trail.length; i++) {
+      const t = this.trail[i];
+      const ta = (i / this.trail.length) * this.alpha * 0.4;
+      ctx.globalAlpha = ta;
+      ctx.fillStyle = this.color;
+      ctx.beginPath();
+      ctx.arc(t.x, t.y, this.radius * 0.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = this.alpha;
+    ctx.fillStyle = this.color;
+    ctx.shadowColor = this.color;
+    ctx.shadowBlur = 8;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  isDead() { return this.alpha <= 0; }
+}
+
+class Rocket {
+  constructor() {
+    this.x = 100 + Math.random() * (canvas.width - 200);
+    this.y = canvas.height;
+    this.targetY = canvas.height * (0.1 + Math.random() * 0.4);
+    this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+    this.speed = 6 + Math.random() * 6;
+    this.trail = [];
+    this.exploded = false;
+  }
+
+  update() {
+    this.trail.push({ x: this.x, y: this.y });
+    if (this.trail.length > 12) this.trail.shift();
+    this.y -= this.speed;
+    if (this.y <= this.targetY) this.explode();
+  }
+
+  explode() {
+    this.exploded = true;
+    const count = 80 + Math.floor(Math.random() * 60);
+    for (let i = 0; i < count; i++) {
+      const useColor = Math.random() > 0.3 ? this.color : COLORS[Math.floor(Math.random() * COLORS.length)];
+      particles.push(new Particle(this.x, this.y, useColor));
+    }
+    for (let i = 0; i < 20; i++) {
+      particles.push(new Particle(this.x, this.y, '#ffffff'));
+    }
+  }
+
+  draw() {
+    ctx.save();
+    for (let i = 0; i < this.trail.length; i++) {
+      const t = this.trail[i];
+      const a = (i / this.trail.length) * 0.8;
+      ctx.globalAlpha = a;
+      ctx.fillStyle = this.color;
+      ctx.shadowColor = this.color;
+      ctx.shadowBlur = 6;
+      ctx.beginPath();
+      ctx.arc(t.x, t.y, 2.5 - (i / this.trail.length) * 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+}
+
+let rockets = [];
+let particles = [];
+
+function launchRocket() {
+  rockets.push(new Rocket());
+}
+
+function launchBurst() {
+  for (let i = 0; i < 5; i++) {
+    setTimeout(() => launchRocket(), i * 220);
+  }
+}
+
+function autoLaunch() {
+  launchRocket();
+  const next = 600 + Math.random() * 1000;
+  setTimeout(autoLaunch, next);
+}
+
+autoLaunch();
+setTimeout(() => launchBurst(), 300);
+
+function animate() {
+  ctx.fillStyle = 'rgba(5, 3, 15, 0.18)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  rockets = rockets.filter(r => {
+    if (!r.exploded) { r.update(); r.draw(); return true; }
+    return false;
+  });
+
+  particles = particles.filter(p => {
+    p.update(); p.draw();
+    return !p.isDead();
+  });
+
+  requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+</body>
+</html>
